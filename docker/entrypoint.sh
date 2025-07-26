@@ -2,10 +2,12 @@
 
 echo "Waiting for postgres..."
 
-while ! nc -z db 5432; do
-  sleep 0.1
-done
+# Wait for PostgreSQL to be ready
+/wait-for-it.sh db:5432 --timeout=30 --strict -- echo "Postgres is up"
 
-echo "PostgreSQL started"
+echo "Running migrations..."
+python manage.py migrate
 
+echo "Starting server..."
 exec "$@"
+
