@@ -1,6 +1,6 @@
 from django.db import models
 from apps.authentication.models import User
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
