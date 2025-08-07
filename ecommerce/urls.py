@@ -41,9 +41,9 @@ urlpatterns = [
     path('api/auth/', include('apps.authentication.urls')),
     path('api/products/', include('apps.products.urls')),
     path('api/orders/', include('apps.orders.urls')),
-    path('api/payments/', include('apps.payments.urls')),
-    path('api/notifications/', include('apps.notifications.urls')),
-    path('api/core/', include('apps.core.urls')),
+#    path('api/payments/', include('apps.payments.urls')),
+#    path('api/notifications/', include('apps.notifications.urls')),
+#    path('api/core/', include('apps.core.urls')),
 
     # Swagger & Redoc
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

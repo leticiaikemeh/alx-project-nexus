@@ -15,12 +15,13 @@ from .serializers import (
     ProductReviewSerializer
 )
 from apps.authentication.permissions import RolePermission
-
+from apps.core.pagination import SmallResultsSetPagination
+from apps.authentication.constants import Roles
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(['admin', 'staff'])]
+    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -44,25 +45,26 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [permissions.IsAuthenticated(), RolePermission(['admin', 'staff'])()]
+            return [permissions.IsAuthenticated(), RolePermission(Roles.privileged)()]
         return [permissions.AllowAny()]
 
 
 class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.select_related('product').all()
     serializer_class = ProductVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(['admin', 'staff'])]
+    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
 
 
 class ProductMediaViewSet(viewsets.ModelViewSet):
     queryset = ProductMedia.objects.select_related('product').all()
     serializer_class = ProductMediaSerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(['admin', 'staff'])]
+    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
 
 
 class ProductReviewViewSet(viewsets.ModelViewSet):
     queryset = ProductReview.objects.select_related('user', 'product').all()
     serializer_class = ProductReviewSerializer
+    pagination_class = SmallResultsSetPagination
 
     def perform_create(self, serializer):
         # Attach the authenticated user to the review

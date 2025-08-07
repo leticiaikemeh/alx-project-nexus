@@ -49,7 +49,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'category',
             'category_id',
             'variants',
-            'media'
+            'media',
+            'reviews'
         ]
         read_only_fields = ['created_at', 'updated_at']
 

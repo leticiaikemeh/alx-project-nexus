@@ -21,6 +21,21 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
+    def with_role(self, role_name):
+        return self.filter(user_roles__role__name=role_name.lower())
+
+    def customers(self):
+        return self.with_role('customer')
+
+    def admins(self):
+        return self.with_role('admin')
+
+    def vendors(self):
+        return self.with_role('vendor')
+
+    def warehouse_staff(self):
+        return self.with_role('warehouse')
+
 
 class Role(models.Model):
     name = models.CharField(max_length=50, unique=True)

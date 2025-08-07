@@ -130,7 +130,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'core.pagination.MediumResultsSetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.MediumResultsSetPagination',
     'PAGE_SIZE': 20,
 }
 
@@ -170,3 +170,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # keep this
+]
