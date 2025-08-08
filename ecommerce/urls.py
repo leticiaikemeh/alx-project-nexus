@@ -19,20 +19,8 @@ from django.urls import path, include, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from .swagger import schema_view  
 
-# Swagger/OpenAPI schema config
-schema_view = get_schema_view(
-    openapi.Info(
-        title="E-commerce API",
-        default_version='v1',
-        description="Documentation for the modular e-commerce backend",
-        terms_of_service="https://yourdomain.com/terms/",
-        contact=openapi.Contact(email="support@yourdomain.com"),
-        license=openapi.License(name="MIT License"),
-    ),
-    public=True,
-    permission_classes=[permissions.AllowAny],
-)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

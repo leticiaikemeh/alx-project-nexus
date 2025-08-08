@@ -21,6 +21,14 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.pk} - {self.user.email} - {self.status}"
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['status']),
+            models.Index(fields=['created_at']),
+        ]
+        ordering = ['-created_at']
 
 
 class OrderItem(models.Model):
@@ -31,6 +39,12 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product_variant} @ {self.price_at_order}"
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['order']),
+            models.Index(fields=['product_variant']),
+        ]
 
 
 class Cart(models.Model):

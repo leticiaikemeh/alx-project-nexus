@@ -2,6 +2,8 @@ from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework import status
 from .models import User, Role, UserRole
 from .constants import Roles
 from .serializers import (
@@ -12,7 +14,7 @@ from .serializers import (
     UserRegistrationSerializer
 )
 from .permissions import IsAdminRole, IsSelfOrAdmin, RolePermission
-
+from .constants import Roles
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()

@@ -6,7 +6,8 @@ from apps.orders.serializers import (
     OrderSerializer,
     OrderItemSerializer,
     CartSerializer,
-    CartItemSerializer
+    CartItemSerializer,
+    OrderCreateSerializer,
 )
 from apps.authentication.permissions import (
     IsOwnerOrAdmin,
@@ -14,20 +15,23 @@ from apps.authentication.permissions import (
 )
 from apps.authentication.constants import Roles
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     """
     Customers can view and create their own orders.
     Admins and warehouse can update status.
     """
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin, CanShipOrders]
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:
-            return self.queryset
-        return self.queryset.filter(user=user)
+        base_qs = Order.objects.select_related("user", "shipping_address", "payment").prefetch_related("items__product_variant")
+        return base_qs if user.is_staff else base_qs.filter(user=user)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderCreateSerializer
+        return OrderSerializer
 
     def perform_create(self, serializer):
         if not self.request.user.has_role(Roles.CUSTOMER):
@@ -39,7 +43,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     """
     Only the owner of the order can manage items.
     """
-    queryset = OrderItem.objects.select_related('order', 'product_variant')
+    queryset = OrderItem.objects.select_related("order__user", "product_variant", "product_variant__product")
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
@@ -51,7 +55,7 @@ class CartViewSet(viewsets.ModelViewSet):
     """
     Only one cart per user. Auto-linked to the requesting user.
     """
-    queryset = Cart.objects.all()
+    queryset = Cart.objects.select_related("user").prefetch_related("items__product_variant")
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
@@ -68,7 +72,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
     """
     Only allow interacting with your own cart items.
     """
-    queryset = CartItem.objects.select_related('cart', 'product_variant')
+    queryset = CartItem.objects.select_related("cart__user", "product_variant", "product_variant__product")
     serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
@@ -76,9 +80,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(cart__user=self.request.user)
 
     def perform_create(self, serializer):
-        # prevent adding duplicate product_variants to cart
         cart = self.request.user.cart
-        product_variant = serializer.validated_data.get('product_variant')
+        product_variant = serializer.validated_data.get("product_variant")
 
         if CartItem.objects.filter(cart=cart, product_variant=product_variant).exists():
             raise PermissionDenied("Product already in cart.")
