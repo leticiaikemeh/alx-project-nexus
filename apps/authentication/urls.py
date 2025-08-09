@@ -10,11 +10,10 @@ from .views import (
     VendorListView
 )
 
-
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'roles', RoleViewSet)
-router.register(r'user-roles', UserRoleViewSet)
+router.register(r'users', UserViewSet, basename= 'users')
+router.register(r'roles', RoleViewSet, basename= 'roles')
+router.register(r'user-roles', UserRoleViewSet, basename= 'user-roles')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -22,6 +21,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', UserRegistrationView.as_view(), name='user-register'),
     path('vendors/', VendorListView.as_view(), name='vendor-list'),
-
 ]
 
