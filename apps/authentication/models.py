@@ -94,6 +94,10 @@ class UserRole(models.Model):
         verbose_name = "User Role"
         verbose_name_plural = "User Roles"
         ordering = ["user"]
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['role']),
+        ]
 
     def __str__(self):
         user_email = getattr(self.user, 'email', 'UnknownUser')

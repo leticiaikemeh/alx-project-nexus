@@ -6,7 +6,8 @@ from .views import (
     RoleViewSet,
     UserRoleViewSet,
     CustomTokenObtainPairView,
-    UserRegistrationView
+    UserRegistrationView,
+    VendorListView
 )
 
 
@@ -20,5 +21,7 @@ urlpatterns = [
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', UserRegistrationView.as_view(), name='user-register'),
+    path('vendors/', VendorListView.as_view(), name='vendor-list'),
+
 ]
 

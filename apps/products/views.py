@@ -15,19 +15,27 @@ from .serializers import (
     ProductReviewSerializer
 )
 from apps.authentication.permissions import RolePermission
-from apps.core.pagination import SmallResultsSetPagination
+from apps.core.pagination import (
+    SmallResultsSetPagination,
+    MediumResultsSetPagination
+)
 from apps.authentication.constants import Roles
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
+    
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), RolePermission(Roles.privileged)()]
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.prefetch_related('variants', 'media', 'reviews').all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = MediumResultsSetPagination
 
     # Search by name or description
     search_fields = ['name', 'description']
@@ -52,13 +60,21 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ProductVariantViewSet(viewsets.ModelViewSet):
     queryset = ProductVariant.objects.select_related('product').all()
     serializer_class = ProductVariantSerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
+    
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
 
 class ProductMediaViewSet(viewsets.ModelViewSet):
     queryset = ProductMedia.objects.select_related('product').all()
     serializer_class = ProductMediaSerializer
-    permission_classes = [permissions.IsAuthenticated, RolePermission(Roles.privileged)]
+    
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
 
 class ProductReviewViewSet(viewsets.ModelViewSet):

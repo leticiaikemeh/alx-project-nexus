@@ -65,3 +65,21 @@ class CanShipOrders(BasePermission):
                 return request.user.is_staff or getattr(request.user, 'role', '') == Roles.WAREHOUSE
         
         return True
+
+class IsRefundOwnerOrAdminForCreate(BasePermission):
+    """
+    - Owners can create refunds on their own successful payments.
+    - Owners can read their own refunds.
+    - Only admins can update/delete refunds.
+    """
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS or request.method == 'POST':
+            return request.user and request.user.is_authenticated
+        # PUT/PATCH/DELETE -> admin only
+        return getattr(request.user, 'is_staff', False) or request.user.has_role('admin')
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS or request.method == 'POST':
+            return obj.payment.user_id == request.user.id or getattr(request.user, 'is_staff', False) or request.user.has_role('admin')
+        # mutate -> admin only
+        return getattr(request.user, 'is_staff', False) or request.user.has_role('admin')

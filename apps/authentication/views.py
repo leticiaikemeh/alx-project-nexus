@@ -1,9 +1,9 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework import status
+
 from .models import User, Role, UserRole
 from .constants import Roles
 from .serializers import (
@@ -14,7 +14,11 @@ from .serializers import (
     UserRegistrationSerializer
 )
 from .permissions import IsAdminRole, IsSelfOrAdmin, RolePermission
-from .constants import Roles
+from apps.core.pagination import (
+    SmallResultsSetPagination,
+    MediumResultsSetPagination
+)
+
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
@@ -23,8 +27,9 @@ class RoleViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = MediumResultsSetPagination
+
 
     def get_permissions(self):
         if self.action in ['list', 'create', 'destroy']:
@@ -33,13 +38,20 @@ class UserViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsSelfOrAdmin()]
         return [IsAuthenticated()]
 
+    def get_queryset(self):
+        # Optimize role preloading
+        return User.objects.prefetch_related(
+            'roles',
+            'user_roles__role'
+        ).only('id', 'email', 'username', 'is_active', 'is_staff')
+
 
 class UserRoleViewSet(viewsets.ModelViewSet):
-    queryset = UserRole.objects.all()
+    queryset = UserRole.objects.select_related('user', 'role')
     serializer_class = UserRoleSerializer
     permission_classes = [IsAuthenticated, RolePermission([Roles.ADMIN])]
 
-    
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -67,8 +79,8 @@ class UserRegistrationView(generics.CreateAPIView):
             'refresh': str(refresh),
         }, status=status.HTTP_201_CREATED)
 
+
 class VendorListView(generics.ListAPIView):
-    queryset = User.objects.vendors()
+    queryset = User.objects.vendors().only('id', 'email', 'username')
     serializer_class = UserSerializer
     permission_classes = [IsAdminRole]
-
