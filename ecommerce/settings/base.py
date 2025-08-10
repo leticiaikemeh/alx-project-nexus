@@ -14,20 +14,23 @@ from pathlib import Path
 import environ
 
 env = environ.Env()
-environ.Env.read_env()
 
+environ.Env.read_env(str(Path(__file__).resolve().parent.parent.parent / '.env')) 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Project root directory
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("DJANGO_SECRET_KEY")
+
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost"])
+
+# CORS
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CORS_ALLOW_CREDENTIALS = False  # default
 
 # Application definition
 
@@ -179,9 +182,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # keep this
+AUTHENTICATION_BACKENDS = [ 'django.contrib.auth.backends.ModelBackend', # keep this
 ]
+

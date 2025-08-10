@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from .swagger import schema_view  # single source of truth
+from .swagger import schema_view  
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,9 +32,8 @@ urlpatterns = [
     # Health
     path('healthz/', lambda request: __import__('django').http.HttpResponse('ok')),
 
-    # Docs
-    re_path(r'^docs/openapi(?P<format>\.json|\.yaml)$',
-            schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    # Swagger & Redoc
+    re_path(r'^docs/openapi(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('docs/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('docs/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
