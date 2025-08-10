@@ -8,9 +8,9 @@ schema_view = get_schema_view(
     openapi.Info(
         title="E-Commerce API",
         default_version='v1',
-        description="API documentation for the E-Commerce backend",
-        terms_of_service="https://www.example.com/terms/",
-        contact=openapi.Contact(email="support@example.com"),
+        description="API documentation for the Nexus-Commerce backend",
+        terms_of_service="https://www.nexus-commerce.store/terms/",
+        contact=openapi.Contact(email="support@nexus-commerce.store"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,

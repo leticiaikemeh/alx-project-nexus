@@ -1,7 +1,8 @@
 from rest_framework import viewsets, permissions, mixins
 from .models import Notification
 from .serializers import NotificationSerializer
-from apps.core.pagination import SmallResultsSetPagination 
+from apps.core.pagination import SmallResultsSetPagination
+
 class NotificationViewSet(mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.UpdateModelMixin,

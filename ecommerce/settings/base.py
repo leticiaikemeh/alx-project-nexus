@@ -144,6 +144,17 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'authentication.User'
 
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": 'Enter: Bearer <your_access_token>'
+        }
+    }
+}
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
