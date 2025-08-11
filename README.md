@@ -7,13 +7,13 @@ A **production-ready, enterprise-grade e-commerce backend API** built with Djang
 
 ## 🚀 Overview
 
-e-commerce is a robust and scalable RESTful API for modern e-commerce platforms, providing secure user authentication, product management, order processing, and seamless payment integration.
+nexus-commerce is a robust and scalable RESTful API for modern e-commerce platforms, providing secure user authentication, product management, order processing, and seamless payment integration.
 
 ---
 
 ## ✨ Key Features
 
-* **Authentication & Authorization**: Knox-based authentication, role-based access (Admin, Customer, Staff), MFA, OAuth.
+* **Authentication & Authorization**: JWT-based authentication, role-based access (Admin, Customer, Staff), MFA, OAuth.
 * **Product Management**: Categories, subcategories, variants, inventory, rich media, reviews & ratings.
 * **Order Management**: Persistent carts, order lifecycle, real-time status, history, bulk orders.
 * **Payment Processing**: Stripe, PayPal, multi-currency, subscriptions, refunds, analytics.
@@ -33,24 +33,66 @@ e-commerce is a robust and scalable RESTful API for modern e-commerce platforms,
 
 ---
 
-## 🚀 Quick Start
+## 🏗 Project Structure
 
-**1. Clone the project**
+**ecommerce/
+├── apps/
+│ ├── authentication/     # User auth, JWT, roles
+│ ├── products/           # Product, category, reviews
+│ ├── core/               # Common utilities, pagination, base models
+│ ├── orders/             # Orders, orders & order items
+│ ├── payments/           # Payments & refunds
+│ └── notifications/      # Notifications
+├── ecommerce/            # Main project settings & URLs
+├── docker/               # Docker configurations
+└── requirements.txt      # Project dependencies**
 
+## 🚀 Features
+1. **CRUD APIs**
+   - Products, Categories
+   - User registration & authentication
+2. **Filtering & Sorting**
+   - Filter products by category
+   - Sort products by price
+3. **Pagination**
+   - Limit results for efficient data transfer
+4. **Secure Authentication**
+   - JWT-based authentication system
+5. **API Documentation**
+   - Swagger UI at `/docs/swagger`
+
+---
+
+## 🛠 Development & Coding Practices
+- **Version Control**: Git with descriptive commit messages (`feat:`, `fix:`, `perf:`, `docs:`)
+- **Code Quality**: Modular design with separation of concerns
+- **Database Optimization**:
+  - Indexed fields
+  - Query optimization with `select_related()` & `prefetch_related()`
+- **Testing**: API endpoint testing via Postman & Swagger
+
+---
+
+## 📦 Installation & Setup
+### Prerequisites
+- Python 3.10+
+- PostgreSQL
+- Docker & Docker Compose
+
+### Steps
 ```bash
-git clone https://github.com/leticiaikemeh/e-commerce.git
-cd e-commerce
-```
+# Clone repository
+git clone https://github.com/your-username/nexus-commerce.git
+cd nexus-commerce/docker
 
-**2. Start with Docker (recommended)**
+# Start containers
+docker-compose up -d
 
-```bash
-docker-compose up --build
-```
+# Apply migrations
+docker-compose exec web python manage.py migrate
 
-* API: [http://localhost:8000](http://localhost:8000)
-* Admin: [http://localhost:8000/admin](http://localhost:8000/admin)
-* Docs: [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
 
 **Manual Setup (without Docker)**
 
@@ -66,21 +108,13 @@ docker-compose up --build
 
 ---
 
-## 📚 API Documentation
+## 📚 API Documentation and Admin
 
 * **Swagger UI**: [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
 * **Redoc**: [http://localhost:8000/redoc/](http://localhost:8000/redoc/)
-* **GraphQL**: [http://localhost:8000/graphql/](http://localhost:8000/graphql/)
-
----
-
-## 🧪 Testing
-
-```bash
-pytest
-# or
-python manage.py test
-```
+* API: [http://localhost:8000](http://localhost:8000)
+* Admin: [http://localhost:8000/admin](http://localhost:8000/admin)
+* Docs: [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
 
 ---
 
@@ -100,5 +134,6 @@ MIT License © 2025 ALX ProDev Backend Engineering Program
 ---
 
 **Contact**:
+leticiaikemeh@gmail.com
 
 
