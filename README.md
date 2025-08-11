@@ -47,7 +47,12 @@ nexus-commerce is a robust and scalable RESTful API for modern e-commerce platfo
 ├── docker/               # Docker configurations
 └── requirements.txt      # Project dependencies**
 
+
+---
+
+
 ## 🚀 Features
+
 1. **CRUD APIs**
    - Products, Categories
    - User registration & authentication
