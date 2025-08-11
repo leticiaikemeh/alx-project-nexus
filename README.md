@@ -34,6 +34,7 @@ nexus-commerce is a robust and scalable RESTful API for modern e-commerce platfo
 ---
 
 ## 🏗 Project Structure
+```bash
 
 **ecommerce/
 ├── apps/
@@ -46,6 +47,7 @@ nexus-commerce is a robust and scalable RESTful API for modern e-commerce platfo
 ├── ecommerce/            # Main project settings & URLs
 ├── docker/               # Docker configurations
 └── requirements.txt      # Project dependencies**
+```
 
 
 ---
@@ -85,7 +87,6 @@ nexus-commerce is a robust and scalable RESTful API for modern e-commerce platfo
 - Docker & Docker Compose
 
 ### Steps
-```bash
 # Clone repository
 git clone https://github.com/your-username/nexus-commerce.git
 cd nexus-commerce/docker
