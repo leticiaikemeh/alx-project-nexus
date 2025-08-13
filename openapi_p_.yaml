@@ -12,315 +12,270 @@ paths:
     post:
       operationId: auth_login_obtainToken
       summary: Login (JWT obtain)
-      description: 'Authenticate with email and password to receive a JWT **access**
-        and **refresh** token pair.
-
-        Use the access token for authenticated requests and the refresh token to obtain
-        new access tokens.
-
-        '
-      tags:
-      - Auth: JWT
+      description: |
+        Authenticate with email and password to receive a JWT **access** and **refresh** token pair.
+        Use the access token for authenticated requests and the refresh token to obtain new access tokens.
+      tags: [Auth: JWT]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/TokenObtainRequest'
+            schema: { $ref: "#/components/schemas/TokenObtainRequest" }
           application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TokenObtainRequest'
+            schema: { $ref: "#/components/schemas/TokenObtainRequest" }
           multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TokenObtainRequest'
+            schema: { $ref: "#/components/schemas/TokenObtainRequest" }
       responses:
-        '200':
+        "200":
           description: JWT token pair and user context returned on successful authentication.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/TokenObtainResponse'
-      security: []
+              schema: { $ref: "#/components/schemas/TokenObtainResponse" }
+      security: []  # public
+
   /api/v1/auth/token/refresh/:
     post:
       operationId: auth_token_refresh
       summary: Refresh access token
-      description: 'Exchange a valid **refresh** token for a new **access** token.
-
+      description: |
+        Exchange a valid **refresh** token for a new **access** token.
         The original refresh token remains valid until it expires or is revoked.
-
-        '
-      tags:
-      - Auth: JWT
+      tags: [Auth: JWT]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+            schema: { $ref: "#/components/schemas/TokenRefreshRequest" }
       responses:
-        '200':
+        "200":
           description: New access token issued.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/TokenRefreshResponse'
-      security: []
+              schema: { $ref: "#/components/schemas/TokenRefreshResponse" }
+      security: []  # public
+
   /api/v1/auth/register/:
     post:
       operationId: auth_register_createUser
       summary: Register
-      description: 'Create a new user account. If an elevated `role_type` is requested
-        but not permitted,
-
-        the API safely falls back to the **customer** role. Returns the created user
-        plus a JWT token pair.
-
-        '
-      tags:
-      - Auth: Registration
+      description: |
+        Create a new user account. If an elevated `role_type` is requested but not permitted,
+        the API safely falls back to the **customer** role. Returns the created user plus a JWT token pair.
+      tags: [Auth: Registration]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserRegistrationRequest'
+            schema: { $ref: "#/components/schemas/UserRegistrationRequest" }
           application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRegistrationRequest'
+            schema: { $ref: "#/components/schemas/UserRegistrationRequest" }
           multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRegistrationRequest'
+            schema: { $ref: "#/components/schemas/UserRegistrationRequest" }
       responses:
-        '201':
+        "201":
           description: User created and authenticated (access and refresh tokens returned).
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/TokenObtainResponse'
-      security: []
+              schema: { $ref: "#/components/schemas/TokenObtainResponse" }
+      security: []  # public
+
   /api/v1/auth/users/:
     get:
       operationId: auth_users_list
       summary: List users
-      description: 'Retrieve a paginated list of users. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Users
+      description: |
+        Retrieve a paginated list of users. Requires **admin** privileges.
+      tags: [Auth: Users]
       parameters:
-      - $ref: '#/components/parameters/pageParam'
+        - $ref: "#/components/parameters/pageParam"
       responses:
-        '200':
+        "200":
           description: Paginated list of users.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserListResponse'
+              schema: { $ref: "#/components/schemas/UserListResponse" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
     post:
       operationId: auth_users_create
       summary: Create user
-      description: 'Create a new user. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Users
+      description: |
+        Create a new user. Requires **admin** privileges.
+      tags: [Auth: Users]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreateRequest'
+            schema: { $ref: "#/components/schemas/UserCreateRequest" }
       responses:
-        '201':
+        "201":
           description: User created.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserDetail'
+              schema: { $ref: "#/components/schemas/UserDetail" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
   /api/v1/auth/users/{id}/:
     get:
       operationId: auth_users_retrieve
       summary: Retrieve user
-      description: 'Retrieve details for a specific user. Admins can access any user;
-        a user can access their own record.
-
-        '
-      tags:
-      - Auth: Users
+      description: |
+        Retrieve details for a specific user. Admins can access any user; a user can access their own record.
+      tags: [Auth: Users]
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
       responses:
-        '200':
+        "200":
           description: User details.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserDetail'
+              schema: { $ref: "#/components/schemas/UserDetail" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
     patch:
       operationId: auth_users_partialUpdate
       summary: Update user (partial)
-      description: 'Partially update a user''s details. Admins can update any user;
-        a user can update their own record.
-
-        '
-      tags:
-      - Auth: Users
+      description: |
+        Partially update a user's details. Admins can update any user; a user can update their own record.
+      tags: [Auth: Users]
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
+            schema: { $ref: "#/components/schemas/UserUpdateRequest" }
       responses:
-        '200':
+        "200":
           description: User updated.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserDetail'
+              schema: { $ref: "#/components/schemas/UserDetail" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
     delete:
       operationId: auth_users_delete
       summary: Delete user
-      description: 'Delete a user. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Users
+      description: |
+        Delete a user. Requires **admin** privileges.
+      tags: [Auth: Users]
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
       responses:
-        '204':
+        "204":
           description: User deleted.
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
   /api/v1/auth/roles/:
     get:
       operationId: auth_roles_list
       summary: List roles
-      description: 'Retrieve all roles in the system. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Roles
+      description: |
+        Retrieve all roles in the system. Requires **admin** privileges.
+      tags: [Auth: Roles]
       responses:
-        '200':
+        "200":
           description: List of roles.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/RoleListResponse'
+              schema: { $ref: "#/components/schemas/RoleListResponse" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
     post:
       operationId: auth_roles_create
       summary: Create role
-      description: 'Create a new role. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Roles
+      description: |
+        Create a new role. Requires **admin** privileges.
+      tags: [Auth: Roles]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/RoleCreateRequest'
+            schema: { $ref: "#/components/schemas/RoleCreateRequest" }
       responses:
-        '201':
+        "201":
           description: Role created.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/RoleDetail'
+              schema: { $ref: "#/components/schemas/RoleDetail" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
   /api/v1/auth/user-roles/:
     get:
       operationId: auth_userRoles_list
       summary: List user-role assignments
-      description: 'Retrieve all user-role assignments. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: UserRoles
+      description: |
+        Retrieve all user-role assignments. Requires **admin** privileges.
+      tags: [Auth: UserRoles]
       responses:
-        '200':
+        "200":
           description: List of user-role assignments.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserRoleListResponse'
+              schema: { $ref: "#/components/schemas/UserRoleListResponse" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
     post:
       operationId: auth_userRoles_create
       summary: Assign role to user
-      description: 'Assign a role to a specific user. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: UserRoles
+      description: |
+        Assign a role to a specific user. Requires **admin** privileges.
+      tags: [Auth: UserRoles]
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserRoleCreateRequest'
+            schema: { $ref: "#/components/schemas/UserRoleCreateRequest" }
       responses:
-        '201':
+        "201":
           description: User role assignment created.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/UserRoleDetail'
+              schema: { $ref: "#/components/schemas/UserRoleDetail" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
   /api/v1/auth/vendors/:
     get:
       operationId: auth_vendors_list
       summary: List vendors
-      description: 'Retrieve a list of vendor accounts. Requires **admin** privileges.
-
-        '
-      tags:
-      - Auth: Vendors
+      description: |
+        Retrieve a list of vendor accounts. Requires **admin** privileges.
+      tags: [Auth: Vendors]
       responses:
-        '200':
+        "200":
           description: List of vendors.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/VendorListResponse'
+              schema: { $ref: "#/components/schemas/VendorListResponse" }
       security:
-      - bearerAuth: []
+        - bearerAuth: []
+
   /api/v1/core/addresses/:
     get:
       operationId: core_addresses_list
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       parameters:
       - name: ordering
         required: false
@@ -349,7 +304,7 @@ paths:
       tags:
       - core
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -359,9 +314,12 @@ paths:
           description: ''
     post:
       operationId: core_addresses_create
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       tags:
       - core
       requestBody:
@@ -377,7 +335,7 @@ paths:
               $ref: '#/components/schemas/Address'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -388,9 +346,12 @@ paths:
   /api/v1/core/addresses/{id}/:
     get:
       operationId: core_addresses_retrieve
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       parameters:
       - in: path
         name: id
@@ -400,7 +361,7 @@ paths:
       tags:
       - core
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -410,9 +371,12 @@ paths:
           description: ''
     put:
       operationId: core_addresses_update
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       parameters:
       - in: path
         name: id
@@ -434,7 +398,7 @@ paths:
               $ref: '#/components/schemas/Address'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -444,9 +408,12 @@ paths:
           description: ''
     patch:
       operationId: core_addresses_partial_update
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       parameters:
       - in: path
         name: id
@@ -467,7 +434,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedAddress'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -477,9 +444,12 @@ paths:
           description: ''
     delete:
       operationId: core_addresses_destroy
-      description: "Users manage their own addresses.\nOptimizations:\n  - owner-scoped\
-        \ queryset\n  - select_related('user') for any reverse usage\n  - small payloads\
-        \ via AddressSerializer"
+      description: |-
+        Users manage their own addresses.
+        Optimizations:
+          - owner-scoped queryset
+          - select_related('user') for any reverse usage
+          - small payloads via AddressSerializer
       parameters:
       - in: path
         name: id
@@ -489,16 +459,16 @@ paths:
       tags:
       - core
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/v1/core/addresses/{id}/set_default/:
     post:
       operationId: core_addresses_set_default_create
-      description: 'Atomically set this address as the default shipping address.
-
-        Enforced also by DB partial unique constraint.'
+      description: |-
+        Atomically set this address as the default shipping address.
+        Enforced also by DB partial unique constraint.
       parameters:
       - in: path
         name: id
@@ -520,7 +490,7 @@ paths:
               $ref: '#/components/schemas/Address'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -531,9 +501,13 @@ paths:
   /api/v1/core/audit-logs/:
     get:
       operationId: core_audit_logs_list
-      description: "Users: can only read their own logs.\nAdmin/staff: can read all\
-        \ logs.\nOptimizations:\n  - owner/admin-scoped queryset\n  - select_related('user')\n\
-        \  - use lightweight list serializer"
+      description: |-
+        Users: can only read their own logs.
+        Admin/staff: can read all logs.
+        Optimizations:
+          - owner/admin-scoped queryset
+          - select_related('user')
+          - use lightweight list serializer
       parameters:
       - name: ordering
         required: false
@@ -562,7 +536,7 @@ paths:
       tags:
       - core
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -573,9 +547,13 @@ paths:
   /api/v1/core/audit-logs/{id}/:
     get:
       operationId: core_audit_logs_retrieve
-      description: "Users: can only read their own logs.\nAdmin/staff: can read all\
-        \ logs.\nOptimizations:\n  - owner/admin-scoped queryset\n  - select_related('user')\n\
-        \  - use lightweight list serializer"
+      description: |-
+        Users: can only read their own logs.
+        Admin/staff: can read all logs.
+        Optimizations:
+          - owner/admin-scoped queryset
+          - select_related('user')
+          - use lightweight list serializer
       parameters:
       - in: path
         name: id
@@ -585,7 +563,7 @@ paths:
       tags:
       - core
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -596,13 +574,11 @@ paths:
   /api/v1/notifications/notifications/:
     get:
       operationId: notifications_notifications_list
-      description: 'Typical behavior:
-
+      description: |-
+        Typical behavior:
         - Users list/read their own notifications
-
         - Users can mark as read (PATCH is_read=true)
-
-        - No create/delete from API; server creates via business logic'
+        - No create/delete from API; server creates via business logic
       parameters:
       - name: ordering
         required: false
@@ -631,7 +607,7 @@ paths:
       tags:
       - notifications
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -642,13 +618,11 @@ paths:
   /api/v1/notifications/notifications/{id}/:
     get:
       operationId: notifications_notifications_retrieve
-      description: 'Typical behavior:
-
+      description: |-
+        Typical behavior:
         - Users list/read their own notifications
-
         - Users can mark as read (PATCH is_read=true)
-
-        - No create/delete from API; server creates via business logic'
+        - No create/delete from API; server creates via business logic
       parameters:
       - in: path
         name: id
@@ -658,7 +632,7 @@ paths:
       tags:
       - notifications
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -668,13 +642,11 @@ paths:
           description: ''
     put:
       operationId: notifications_notifications_update
-      description: 'Typical behavior:
-
+      description: |-
+        Typical behavior:
         - Users list/read their own notifications
-
         - Users can mark as read (PATCH is_read=true)
-
-        - No create/delete from API; server creates via business logic'
+        - No create/delete from API; server creates via business logic
       parameters:
       - in: path
         name: id
@@ -696,7 +668,7 @@ paths:
               $ref: '#/components/schemas/Notification'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -706,13 +678,11 @@ paths:
           description: ''
     patch:
       operationId: notifications_notifications_partial_update
-      description: 'Typical behavior:
-
+      description: |-
+        Typical behavior:
         - Users list/read their own notifications
-
         - Users can mark as read (PATCH is_read=true)
-
-        - No create/delete from API; server creates via business logic'
+        - No create/delete from API; server creates via business logic
       parameters:
       - in: path
         name: id
@@ -733,7 +703,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedNotification'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -773,7 +743,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -798,7 +768,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CartItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -820,7 +790,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -852,7 +822,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CartItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -884,7 +854,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedCartItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -905,7 +875,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -941,7 +911,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -966,7 +936,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Cart'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -988,7 +958,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1020,7 +990,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Cart'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1052,7 +1022,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedCart'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1073,7 +1043,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -1109,7 +1079,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1134,7 +1104,7 @@ paths:
             schema:
               $ref: '#/components/schemas/OrderItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -1156,7 +1126,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1188,7 +1158,7 @@ paths:
             schema:
               $ref: '#/components/schemas/OrderItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1220,7 +1190,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedOrderItem'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1241,16 +1211,16 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/v1/orders/orders/:
     get:
       operationId: orders_orders_list
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       parameters:
       - name: ordering
         required: false
@@ -1279,7 +1249,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1289,9 +1259,9 @@ paths:
           description: ''
     post:
       operationId: orders_orders_create
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       tags:
       - orders
       requestBody:
@@ -1307,7 +1277,7 @@ paths:
               $ref: '#/components/schemas/OrderCreate'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -1318,9 +1288,9 @@ paths:
   /api/v1/orders/orders/{id}/:
     get:
       operationId: orders_orders_retrieve
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       parameters:
       - in: path
         name: id
@@ -1330,7 +1300,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1340,9 +1310,9 @@ paths:
           description: ''
     put:
       operationId: orders_orders_update
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       parameters:
       - in: path
         name: id
@@ -1364,7 +1334,7 @@ paths:
               $ref: '#/components/schemas/Order'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1374,9 +1344,9 @@ paths:
           description: ''
     patch:
       operationId: orders_orders_partial_update
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       parameters:
       - in: path
         name: id
@@ -1397,7 +1367,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedOrder'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1407,9 +1377,9 @@ paths:
           description: ''
     delete:
       operationId: orders_orders_destroy
-      description: 'Customers can view and create their own orders.
-
-        Admins and warehouse can update status.'
+      description: |-
+        Customers can view and create their own orders.
+        Admins and warehouse can update status.
       parameters:
       - in: path
         name: id
@@ -1419,7 +1389,7 @@ paths:
       tags:
       - orders
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -1454,7 +1424,7 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1478,7 +1448,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Payment'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -1498,7 +1468,7 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1528,7 +1498,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Payment'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1558,7 +1528,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedPayment'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1577,7 +1547,7 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -1612,7 +1582,7 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1637,7 +1607,7 @@ paths:
               $ref: '#/components/schemas/RefundCreate'
         required: true
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -1657,7 +1627,7 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1687,7 +1657,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Refund'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1717,7 +1687,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedRefund'
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1736,562 +1706,856 @@ paths:
       tags:
       - payments
       security:
-      - bearerAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
-  # ====== Categories ======
-  /api/v1/categories/:
+  /api/v1/products/categories/:
     get:
       operationId: products_categories_list
-      summary: List categories
-      tags: [Products: Categories]
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/Category" }
-      security: []
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
     post:
       operationId: products_categories_create
-      summary: Create category
-      tags: [Products: Categories]
+      tags:
+      - products
       requestBody:
-        required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Category" }
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
-        "201":
-          description: Created
+        '201':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Category" }
-      security: [{ bearerAuth: [] }]
-
-  /api/v1/categories/{id}/:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/products/categories/{id}/:
     get:
       operationId: products_categories_retrieve
-      summary: Get a category
-      tags: [Products: Categories]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Category" }
-      security: []
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
     put:
       operationId: products_categories_update
-      summary: Replace category
-      tags: [Products: Categories]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
         required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/Category" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Category" }
-      security: [{ bearerAuth: [] }]
-    patch:
-      operationId: products_categories_partialUpdate
-      summary: Update category (partial)
-      tags: [Products: Categories]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      tags:
+      - products
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Category" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Category" }
-      security: [{ bearerAuth: [] }]
-    delete:
-      operationId: products_categories_delete
-      summary: Delete category
-      tags: [Products: Categories]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      responses:
-        "204":
-          description: No Content
-      security: [{ bearerAuth: [] }]
-
-  # ====== Products ======
-  /api/v1/products/:
-    get:
-      operationId: products_list
-      summary: List products
-      description: |
-        Paginated list with search, filter, and ordering.
-        Filters: `category`, `price__gte`, `price__lte`, `is_active`
-        Search: `search` across `name`, `description`
-        Ordering: `ordering` by `price`, `name`, `created_at` (prefix with `-` for desc)
-      tags: [Products]
-      parameters:
-        - $ref: "#/components/parameters/pageParam"
-        - in: query
-          name: page_size
-          schema: { type: integer, minimum: 1, maximum: 50 }
-          description: Items per page (max 50).
-        - in: query
-          name: search
-          schema: { type: string }
-        - in: query
-          name: ordering
-          schema: { type: string }
-          description: e.g. `-created_at,price`
-        - in: query
-          name: category
-          schema: { type: integer }
-        - in: query
-          name: price__gte
-          schema: { type: string }
-        - in: query
-          name: price__lte
-          schema: { type: string }
-        - in: query
-          name: is_active
-          schema: { type: boolean }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductListResponse" }
-      security: []
-    post:
-      operationId: products_create
-      summary: Create product
-      tags: [Products]
-      requestBody:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
         required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductCreateRequest" }
+      security:
+      - jwtAuth: []
       responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Product" }
-      security: [{ bearerAuth: [] }]
-
-  /api/v1/products/{id}/:
-    get:
-      operationId: products_retrieve
-      summary: Get a product
-      tags: [Products]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Product" }
-      security: []
-    put:
-      operationId: products_update
-      summary: Replace product
-      tags: [Products]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductCreateRequest" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Product" }
-      security: [{ bearerAuth: [] }]
-    patch:
-      operationId: products_partialUpdate
-      summary: Update product (partial)
-      tags: [Products]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductUpdateRequest" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Product" }
-      security: [{ bearerAuth: [] }]
-    delete:
-      operationId: products_delete
-      summary: Delete product
-      tags: [Products]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      responses:
-        "204":
-          description: No Content
-      security: [{ bearerAuth: [] }]
-
-  # ====== Variants ======
-  /api/v1/variants/:
-    get:
-      operationId: products_variants_list
-      summary: List product variants
-      tags: [Products: Variants]
-      responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/ProductVariant" }
-      security: []
-    post:
-      operationId: products_variants_create
-      summary: Create product variant
-      tags: [Products: Variants]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductVariant" }
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductVariant" }
-      security: [{ bearerAuth: [] }]
-
-  /api/v1/variants/{id}/:
-    get:
-      operationId: products_variants_retrieve
-      summary: Get a product variant
-      tags: [Products: Variants]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductVariant" }
-      security: []
-    put:
-      operationId: products_variants_update
-      summary: Replace product variant
-      tags: [Products: Variants]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductVariant" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductVariant" }
-      security: [{ bearerAuth: [] }]
+                $ref: '#/components/schemas/Category'
+          description: ''
     patch:
-      operationId: products_variants_partialUpdate
-      summary: Update product variant (partial)
-      tags: [Products: Variants]
+      operationId: products_categories_partial_update
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - products
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/ProductVariant" }
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtAuth: []
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductVariant" }
-      security: [{ bearerAuth: [] }]
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
     delete:
-      operationId: products_variants_delete
-      summary: Delete product variant
-      tags: [Products: Variants]
+      operationId: products_categories_destroy
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
       responses:
-        "204":
-          description: No Content
-      security: [{ bearerAuth: [] }]
-
-  # ====== Media ======
-  /api/v1/media/:
+        '204':
+          description: No response body
+  /api/v1/products/media/:
     get:
       operationId: products_media_list
-      summary: List product media
-      tags: [Products: Media]
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/ProductMedia" }
-      security: []
+                $ref: '#/components/schemas/PaginatedProductMediaList'
+          description: ''
     post:
       operationId: products_media_create
-      summary: Create product media
-      tags: [Products: Media]
+      tags:
+      - products
       requestBody:
-        required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/ProductMedia" }
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
-        "201":
-          description: Created
+        '201':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductMedia" }
-      security: [{ bearerAuth: [] }]
-
-  /api/v1/media/{id}/:
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+  /api/v1/products/media/{id}/:
     get:
       operationId: products_media_retrieve
-      summary: Get a product media item
-      tags: [Products: Media]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product media.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductMedia" }
-      security: []
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
     put:
       operationId: products_media_update
-      summary: Replace product media
-      tags: [Products: Media]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product media.
         required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductMedia" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductMedia" }
-      security: [{ bearerAuth: [] }]
-    patch:
-      operationId: products_media_partialUpdate
-      summary: Update product media (partial)
-      tags: [Products: Media]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      tags:
+      - products
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/ProductMedia" }
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductMedia'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductMedia" }
-      security: [{ bearerAuth: [] }]
-    delete:
-      operationId: products_media_delete
-      summary: Delete product media
-      tags: [Products: Media]
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+    patch:
+      operationId: products_media_partial_update
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product media.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductMedia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductMedia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductMedia'
+      security:
+      - jwtAuth: []
       responses:
-        "204":
-          description: No Content
-      security: [{ bearerAuth: [] }]
-
-  # ====== Reviews ======
-  /api/v1/reviews/:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMedia'
+          description: ''
+    delete:
+      operationId: products_media_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product media.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/products/:
+    get:
+      operationId: products_products_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: price__gte
+        schema:
+          type: number
+      - in: query
+        name: price__lte
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+    post:
+      operationId: products_products_create
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Product'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/products/products/{id}/:
+    get:
+      operationId: products_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: products_products_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Product'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: products_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: products_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/reviews/:
     get:
       operationId: products_reviews_list
-      summary: List product reviews
-      tags: [Products: Reviews]
       parameters:
-        - $ref: "#/components/parameters/pageParam"
-        - in: query
-          name: page_size
-          schema: { type: integer, minimum: 1, maximum: 10 }
-          description: Items per page (max 10).
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ReviewListResponse" }
-      security: []
+              schema:
+                $ref: '#/components/schemas/PaginatedProductReviewList'
+          description: ''
     post:
       operationId: products_reviews_create
-      summary: Create a review
-      tags: [Products: Reviews]
+      tags:
+      - products
       requestBody:
-        required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/ProductReviewCreateRequest" }
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
-        "201":
-          description: Created
+        '201':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductReview" }
-      security: [{ bearerAuth: [] }]
-
-  /api/v1/reviews/{id}/:
+              schema:
+                $ref: '#/components/schemas/ProductReview'
+          description: ''
+  /api/v1/products/reviews/{id}/:
     get:
       operationId: products_reviews_retrieve
-      summary: Get a review
-      tags: [Products: Reviews]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product review.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductReview" }
-      security: []
+              schema:
+                $ref: '#/components/schemas/ProductReview'
+          description: ''
     put:
       operationId: products_reviews_update
-      summary: Replace a review
-      tags: [Products: Reviews]
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
-      requestBody:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product review.
         required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ProductReview" }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ProductReview" }
-      security: [{ bearerAuth: [] }]
-    patch:
-      operationId: products_reviews_partialUpdate
-      summary: Update a review (partial)
-      tags: [Products: Reviews]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      tags:
+      - products
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/ProductReview" }
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductReview'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
-        "200":
-          description: OK
+        '200':
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ProductReview" }
-      security: [{ bearerAuth: [] }]
-    delete:
-      operationId: products_reviews_delete
-      summary: Delete a review
-      tags: [Products: Reviews]
+              schema:
+                $ref: '#/components/schemas/ProductReview'
+          description: ''
+    patch:
+      operationId: products_reviews_partial_update
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: integer }
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product review.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductReview'
+      security:
+      - jwtAuth: []
       responses:
-        "204":
-          description: No Content
-      security: [{ bearerAuth: [] }]
-
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductReview'
+          description: ''
+    delete:
+      operationId: products_reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product review.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/variants/:
+    get:
+      operationId: products_variants_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductVariantList'
+          description: ''
+    post:
+      operationId: products_variants_create
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+  /api/v1/products/variants/{id}/:
+    get:
+      operationId: products_variants_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product variant.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    put:
+      operationId: products_variants_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product variant.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductVariant'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    patch:
+      operationId: products_variants_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product variant.
+        required: true
+      tags:
+      - products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariant'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    delete:
+      operationId: products_variants_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product variant.
+        required: true
+      tags:
+      - products
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
 components:
   securitySchemes:
     bearerAuth:
@@ -2452,9 +2716,9 @@ components:
       - image
       - video
       type: string
-      description: '* `image` - Image
-
-        * `video` - Video'
+      description: |-
+        * `image` - Image
+        * `video` - Video
     Notification:
       type: object
       properties:
@@ -2584,13 +2848,11 @@ components:
       - shipped
       - delivered
       type: string
-      description: '* `pending` - Pending
-
+      description: |-
+        * `pending` - Pending
         * `processing` - Processing
-
         * `shipped` - Shipped
-
-        * `delivered` - Delivered'
+        * `delivered` - Delivered
     PaginatedAddressList:
       type: object
       required:
@@ -3398,13 +3660,11 @@ components:
       - failed
       - refunded
       type: string
-      description: '* `pending` - Pending
-
+      description: |-
+        * `pending` - Pending
         * `success` - Success
-
         * `failed` - Failed
-
-        * `refunded` - Refunded'
+        * `refunded` - Refunded
     Product:
       type: object
       properties:
@@ -3587,17 +3847,16 @@ components:
       - payment
     Role:
       type: object
-      required:
-      - id
-      - name
       properties:
         id:
           type: integer
-          example: 3
+          readOnly: true
         name:
           type: string
-          description: Role name (e.g., 'admin', 'staff', 'customer')
-          example: customer
+          maxLength: 50
+      required:
+      - id
+      - name
     TokenRefresh:
       type: object
       properties:
@@ -3617,55 +3876,59 @@ components:
       - success
       - error
       type: string
-      description: '* `info` - Info
-
+      description: |-
+        * `info` - Info
         * `warning` - Warning
-
         * `success` - Success
-
-        * `error` - Error'
+        * `error` - Error
     User:
       type: object
-      required:
-      - id
-      - email
-      - username
       properties:
         id:
           type: integer
-          example: 42
+          readOnly: true
         email:
           type: string
           format: email
-          example: user@example.com
+          maxLength: 254
         username:
           type: string
-          example: johndoe
+          maxLength: 255
         first_name:
           type: string
           nullable: true
-          example: John
+          maxLength: 100
         last_name:
           type: string
           nullable: true
-          example: Doe
+          maxLength: 100
         roles:
           type: array
           items:
             $ref: '#/components/schemas/Role'
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - id
+      - password
+      - roles
+      - username
     UserMinimal:
       type: object
-      required:
-      - id
-      - email
       properties:
         id:
           type: integer
-          example: 42
+          readOnly: true
         email:
           type: string
           format: email
-          example: user@example.com
+          maxLength: 254
+      required:
+      - email
+      - id
     UserRegistration:
       type: object
       properties:
@@ -3692,10 +3955,73 @@ components:
       - username
     UserRole:
       type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        role:
+          $ref: '#/components/schemas/Role'
       required:
       - id
-      - user
       - role
+      - user
+      
+    Role:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          description: Role name (e.g., 'admin', 'staff', 'customer')
+          example: customer
+
+    UserMinimal:
+      type: object
+      required: [id, email]
+      properties:
+        id:
+          type: integer
+          example: 42
+        email:
+          type: string
+          format: email
+          example: user@example.com
+
+    User:
+      type: object
+      required: [id, email, username]
+      properties:
+        id:
+          type: integer
+          example: 42
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        username:
+          type: string
+          example: johndoe
+        first_name:
+          type: string
+          nullable: true
+          example: John
+        last_name:
+          type: string
+          nullable: true
+          example: Doe
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Role"
+
+    UserRole:
+      type: object
+      required: [id, user, role]
       properties:
         id:
           type: integer
@@ -3705,12 +4031,11 @@ components:
           description: User primary key
           example: 42
         role:
-          $ref: '#/components/schemas/Role'
+          $ref: "#/components/schemas/Role"
+
     TokenObtainRequest:
       type: object
-      required:
-      - email
-      - password
+      required: [email, password]
       properties:
         email:
           type: string
@@ -3719,16 +4044,11 @@ components:
         password:
           type: string
           format: password
-          example: P@ssw0rd!
+          example: "P@ssw0rd!"
+
     TokenObtainResponse:
       type: object
-      required:
-      - access
-      - refresh
-      - user_id
-      - email
-      - username
-      - roles
+      required: [access, refresh, user_id, email, username, roles]
       properties:
         access:
           type: string
@@ -3751,29 +4071,26 @@ components:
           items:
             type: string
             example: customer
+
     TokenRefreshRequest:
       type: object
-      required:
-      - refresh
+      required: [refresh]
       properties:
         refresh:
           type: string
           description: JWT refresh token
+
     TokenRefreshResponse:
       type: object
-      required:
-      - access
+      required: [access]
       properties:
         access:
           type: string
           description: New JWT access token
+
     UserRegistrationRequest:
       type: object
-      required:
-      - email
-      - username
-      - password
-      - password_confirmation
+      required: [email, username, password, password_confirmation]
       properties:
         email:
           type: string
@@ -3785,128 +4102,20 @@ components:
         password:
           type: string
           format: password
-          example: P@ssw0rd!
+          example: "P@ssw0rd!"
         password_confirmation:
           type: string
           format: password
-          example: P@ssw0rd!
+          example: "P@ssw0rd!"
         role_type:
           type: string
-          description: 'Intended role (privileged roles require Admin). If omitted
-            or not permitted, defaults to ''customer''.
-
-            '
+          description: >
+            Intended role (privileged roles require Admin). If omitted or not permitted, defaults to 'customer'.
           example: customer
+
     UserRegistrationResponse:
       allOf:
-      - $ref: '#/components/schemas/User'
-    UserDetail:
-      $ref: '#/components/schemas/User'
-    UserCreateRequest:
-      type: object
-      required:
-      - email
-      - username
-      - password
-      properties:
-        email:
-          type: string
-          format: email
-        username:
-          type: string
-        first_name:
-          type: string
-          nullable: true
-        last_name:
-          type: string
-          nullable: true
-        password:
-          type: string
-          format: password
-          description: Write-only
-    UserUpdateRequest:
-      type: object
-      description: Partial update; all fields optional.
-      properties:
-        email:
-          type: string
-          format: email
-        username:
-          type: string
-        first_name:
-          type: string
-          nullable: true
-        last_name:
-          type: string
-          nullable: true
-        password:
-          type: string
-          format: password
-          description: Write-only
-    UserListResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          format: uri
-          nullable: true
-        previous:
-          type: string
-          format: uri
-          nullable: true
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserDetail'
-    RoleListResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/Role'
-    UserRoleDetail:
-      $ref: '#/components/schemas/UserRole'
-    UserRoleCreateRequest:
-      type: object
-      required:
-      - user
-      - role
-      properties:
-        user:
-          type: integer
-          description: User primary key
-          example: 42
-        role:
-          $ref: '#/components/schemas/Role'
-    UserRoleListResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/UserRoleDetail'
-    VendorListResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 10
-        next:
-          type: string
-          format: uri
-          nullable: true
-        previous:
-          type: string
-          format: uri
-          nullable: true
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserDetail'
-  parameters:
-    pageParam:
-      in: query
-      name: page
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-      description: 1-based page index for paginated list responses.
+        - $ref: "#/components/schemas/User"
+
+
+    
