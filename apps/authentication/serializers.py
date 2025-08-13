@@ -5,7 +5,6 @@ from .models import User, Role, UserRole
 from .constants import Roles
 
 
-
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -27,7 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'roles', 'password']
+        fields = ['id', 'email', 'username', 'first_name',
+                  'last_name', 'roles', 'password']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -45,7 +45,8 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-    
+
+
 class UserMinimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -66,6 +67,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         })
         return data
 
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirmation = serializers.CharField(write_only=True)
@@ -73,7 +75,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'password_confirmation', 'role_type']
+        fields = ['email', 'username', 'password',
+                  'password_confirmation', 'role_type']
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirmation']:
@@ -95,4 +98,3 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         user._pending_role = role_type.lower()  # Signal picks this up
         return user
-        

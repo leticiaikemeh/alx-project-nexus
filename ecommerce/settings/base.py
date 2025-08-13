@@ -10,14 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import environ
 
 env = environ.Env()
 
-environ.Env.read_env(str(Path(__file__).resolve().parent.parent.parent / '.env')) 
+environ.Env.read_env(
+    str(Path(__file__).resolve().parent.parent.parent / '.env'))
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Project root directory
+# Project root directory
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -48,6 +51,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'django_filters',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     # Local apps
     'apps.authentication',
     'apps.products',
@@ -137,9 +142,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.MediumResultsSetPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-from datetime import timedelta
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -148,6 +153,17 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'authentication.User'
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Nexus-Commerce API",
+    "DESCRIPTION": "E-commerce backend APIs for products, carts, orders, etc.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "CONTACT": {"email": "support@nexus-commerce.store"},
+    "LICENSE": {"name": "BSD-3-Clause"},
+    "SCHEMA_PATH_PREFIX": r"/api/v1",
+    "SERVE_PERMISSIONS": [],
+}
 
 SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
@@ -185,6 +201,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-AUTHENTICATION_BACKENDS = [ 'django.contrib.auth.backends.ModelBackend', # keep this
-]
-
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',  # keep this
+                           ]
