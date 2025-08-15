@@ -221,6 +221,8 @@ USE_TZ = True
 #   location /static/ { alias /opt/ecommerce/static/; }
 STATIC_URL = "/static/"
 STATIC_ROOT = Path(env("STATIC_ROOT", default="/opt/ecommerce/static"))
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("MEDIA_ROOT", default=str(BASE_DIR / "media")))

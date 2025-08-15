@@ -1,35 +1,45 @@
-# ecommerce/urls.py (project)
+# ecommerce/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from apps.authentication import urls as auth_urls
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     # OpenAPI schema & docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/swagger/",
-         SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/docs/redoc/",
-         SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path(
+        "api/docs/swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/docs/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
 
-    # Mount authentication resources at /api/v1/
+    # Auth resources mounted under /api/v1/
     path(
         "api/v1/",
         include((auth_urls.resource_urlpatterns, "authentication"),
                 namespace="auth-resources"),
     ),
-
-    # Mount auth endpoints at /api/v1/auth/
     path(
         "api/v1/auth/",
         include((auth_urls.auth_urlpatterns, "authentication"),
                 namespace="auth-endpoints"),
     ),
 
-    # Other apps — ensure their internal urls don't double-prefix
+    # Other apps mounted under /api/v1/
     path("api/v1/", include("apps.products.urls")),
     path("api/v1/", include("apps.orders.urls")),
     path("api/v1/", include("apps.payments.urls")),
@@ -39,3 +49,8 @@ urlpatterns = [
     # Health
     path("healthz/", lambda request: HttpResponse("ok")),
 ]
+
+# Dev-only static serving (prod should use NGINX)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL,
+                          document_root=settings.STATIC_ROOT)
