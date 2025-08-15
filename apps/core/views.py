@@ -1,75 +1,116 @@
-from django.db import transaction
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
+# apps/core/views.py
+from __future__ import annotations
+
+from rest_framework import viewsets, mixins
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from .models import Address, AuditLog
 from .serializers import AddressSerializer, AuditLogListSerializer, AuditLogDetailSerializer
-from apps.core.pagination import SmallResultsSetPagination, MediumResultsSetPagination
+from apps.authentication.permissions import IsOwnerOrAdmin
+from apps.authentication.constants import Roles
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List my addresses",
+        description="Returns addresses belonging to the authenticated user.",
+        tags=["Core: Addresses"],
+        responses={200: OpenApiResponse(
+            response=AddressSerializer(many=True))},
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve an address",
+        tags=["Core: Addresses"],
+        responses={200: OpenApiResponse(
+            response=AddressSerializer), 404: OpenApiResponse(description="Not found")},
+    ),
+    create=extend_schema(
+        summary="Create an address",
+        tags=["Core: Addresses"],
+        request=AddressSerializer,
+        responses={201: OpenApiResponse(response=AddressSerializer)},
+    ),
+    update=extend_schema(
+        summary="Update an address",
+        tags=["Core: Addresses"],
+        responses={200: OpenApiResponse(response=AddressSerializer)},
+    ),
+    partial_update=extend_schema(
+        summary="Partially update an address",
+        tags=["Core: Addresses"],
+        responses={200: OpenApiResponse(response=AddressSerializer)},
+    ),
+    destroy=extend_schema(
+        summary="Delete an address",
+        tags=["Core: Addresses"],
+        responses={204: OpenApiResponse(description="Deleted")},
+    ),
+)
 class AddressViewSet(viewsets.ModelViewSet):
     """
-    Users manage their own addresses.
-    Optimizations:
-      - owner-scoped queryset
-      - select_related('user') for any reverse usage
-      - small payloads via AddressSerializer
+    Address API.
+    Users manage their own addresses; admins can access all.
     """
     serializer_class = AddressSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    pagination_class = SmallResultsSetPagination
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    queryset = Address.objects.none()
 
     def get_queryset(self):
-        return (
-            Address.objects
-            .for_user(self.request.user)
-            .select_related('user')
-            .only('id', 'street', 'city', 'state', 'country', 'zip_code', 'is_default_shipping', 'user_id')
+        # Avoid touching request.user during schema generation
+        if getattr(self, "swagger_fake_view", False):
+            return Address.objects.none()
+
+        user = self.request.user
+        qs = Address.objects.select_related('user')
+        is_admin = (
+            getattr(user, 'is_staff', False)
+            or getattr(user, 'is_superuser', False)
+            or getattr(user, 'has_role', lambda *_: False)(Roles.ADMIN)
         )
+        return qs if is_admin else qs.filter(user=user)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
-    @action(detail=True, methods=['post'])
-    def set_default(self, request, pk=None):
-        """
-        Atomically set this address as the default shipping address.
-        Enforced also by DB partial unique constraint.
-        """
-        addr = self.get_object()
-        if addr.user_id != request.user.id:
-            return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        with transaction.atomic():
-            Address.objects.for_user(request.user).update(is_default_shipping=False)
-            if not addr.is_default_shipping:
-                addr.is_default_shipping = True
-                addr.save(update_fields=['is_default_shipping'])
-
-        return Response({'ok': True})
-
-class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        summary="List audit logs (scoped)",
+        description=(
+            "Returns audit logs.\n\n"
+            "- **Admins** (is_staff/superuser/role=ADMIN): see all logs.\n"
+            "- **Users**: see only logs related to their own actions/resources (adjust filter as needed)."
+        ),
+        tags=["Core: Audit Logs"],
+        responses={200: OpenApiResponse(
+            response=AuditLogListSerializer(many=True))},
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve an audit log entry",
+        tags=["Core: Audit Logs"],
+        responses={200: OpenApiResponse(
+            response=AuditLogDetailSerializer), 404: OpenApiResponse(description="Not found")},
+    ),
+)
+class AuditLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """
-    Users: can only read their own logs.
-    Admin/staff: can read all logs.
-    Optimizations:
-      - owner/admin-scoped queryset
-      - select_related('user')
-      - use lightweight list serializer
+    Read-only Audit Log API.
+    Intended for observability and compliance surfaces. Mutations are disabled.
     """
-    permission_classes = [permissions.IsAuthenticated]
-    pagination_class = MediumResultsSetPagination
-    swagger_tags = ['Audit Logs']  # if you’re tagging
+    permission_classes = [IsAuthenticated]
+    queryset = AuditLog.objects.none()
 
     def get_queryset(self):
-        qs = (AuditLog.objects
-              .select_related('user')
-              .only('id', 'user_id', 'action', 'created_at'))
-        u = self.request.user
-        if u.is_staff or getattr(u, 'is_superuser', False):
-            return qs
-        return qs.filter(user=u)
+        # NEW: short-circuit during schema generation
+        if getattr(self, "swagger_fake_view", False):
+            return AuditLog.objects.none()
+
+        user = self.request.user
+        qs = AuditLog.objects.select_related('user').order_by('-created_at')
+        is_admin = (
+            getattr(user, 'is_staff', False)
+            or getattr(user, 'is_superuser', False)
+            or getattr(user, 'has_role', lambda *_: False)(Roles.ADMIN)
+        )
+        return qs if is_admin else qs.filter(user=user)
 
     def get_serializer_class(self):
         return AuditLogDetailSerializer if self.action == 'retrieve' else AuditLogListSerializer

@@ -163,6 +163,29 @@ SPECTACULAR_SETTINGS = {
     "LICENSE": {"name": "BSD-3-Clause"},
     "SCHEMA_PATH_PREFIX": r"/api/v1",
     "SERVE_PERMISSIONS": [],
+    "SECURITY_SCHEMES": {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "TAGS": [
+                {"name": "Payments", "description": "Payment and refund APIs"},
+                {"name": "Refunds", "description": "Refund creation and retrieval"},
+                {"name": "Orders", "description": "Order management"},
+                {"name": "Order Items", "description": "Items belonging to orders"},
+                {"name": "Cart", "description": "Shopping cart"},
+                {"name": "Cart Items", "description": "Items in the shopping cart"},
+                {"name": "Notifications", "description": "User notifications"},
+                {"name": "Core: Addresses",
+                 "description": "Addresses (shipping/billing)"},
+                {"name": "Core: Audit Logs", "description": "Read-only audit trail"},
+            ],
+
+            # Optional polish
+            "POSTPROCESSING_HOOKS": ["drf_spectacular.hooks.postprocess_schema_enums"],
+
+        }
+    }
 }
 
 SWAGGER_SETTINGS = {

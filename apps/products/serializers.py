@@ -1,4 +1,5 @@
-from typing import Any, Dict
+from drf_spectacular.utils import extend_schema_field
+from typing import List, Dict, Any
 from rest_framework import serializers
 from .models import (
     Category,
@@ -114,17 +115,12 @@ class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
     media = ProductMediaSerializer(many=True, read_only=True)
-    reviews = ProductReviewSerializer(
-        many=True, read_only=True, source="reviews")
+    reviews = serializers.SerializerMethodField(read_only=True)
 
     # Write
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(), source="category", write_only=True
     )
-
-    # Optional: expose nested reviews (assumes related_name='reviews')
-    # If your model uses a different related name, adjust source accordingly.
-    reviews = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
@@ -144,3 +140,16 @@ class ProductSerializer(serializers.ModelSerializer):
             "reviews",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+    @extend_schema_field(ProductReviewSerializer(many=True))
+    def get_reviews(self, obj: Product) -> List[Dict[str, Any]]:
+        """
+        Return nested reviews for this product.
+        """
+        qs = (
+            ProductReview.objects
+            .filter(product=obj)
+            .select_related("user", "product")
+            .order_by("-created_at")
+        )
+        return ProductReviewSerializer(qs, many=True, context=self.context).data

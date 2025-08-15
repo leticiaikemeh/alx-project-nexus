@@ -1,15 +1,73 @@
+# apps/orders/serializers.py
+from __future__ import annotations
+
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+
 from .models import Order, OrderItem, Cart, CartItem
 from apps.products.models import ProductVariant
 from apps.products.serializers import ProductVariantSerializer
 from apps.payments.models import Payment
 from apps.core.models import Address
 from apps.authentication.serializers import UserMinimalSerializer
-from rest_framework import serializers
-from django.db import transaction
-from rest_framework.exceptions import ValidationError
 
+
+# ---------- OpenAPI Examples ----------
+
+ORDER_ITEM_EXAMPLE = OpenApiExample(
+    name="OrderItem",
+    summary="Example order item (read)",
+    value={
+        "id": 101,
+        "product_variant": {
+            "id": 501,
+            "name": "T-Shirt – Large – Blue",
+            "price": "19.99",
+            "sku": "TSHIRT-L-BLU"
+        },
+        "quantity": 2,
+        "price_at_order": "19.99"
+    }
+)
+
+ORDER_EXAMPLE = OpenApiExample(
+    name="Order",
+    summary="Example order with items",
+    value={
+        "id": 42,
+        "user": {"id": "uuid-1234", "email": "john@example.com"},
+        "status": "pending",
+        "total_amount": "39.98",
+        "shipping_address": "John Doe, 123 Main St, Lagos",
+        "payment": "TXN-2025-0001",
+        "created_at": "2025-08-13T10:00:00Z",
+        "updated_at": "2025-08-13T10:10:00Z",
+        "items": [ORDER_ITEM_EXAMPLE.value]
+    }
+)
+
+ORDER_CREATE_EXAMPLE = OpenApiExample(
+    name="OrderCreate",
+    summary="Request to create an order",
+    value={
+        "shipping_address": 301,
+        "items": [
+            {"product_variant": 501, "quantity": 2}
+        ],
+        "total_amount": "39.98"
+    }
+)
+
+
+# ---------- READ SERIALIZERS ----------
+
+@extend_schema_serializer(component_name="OrderItem", examples=[ORDER_ITEM_EXAMPLE])
 class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    Read-only representation of an item in an order.
+    """
     product_variant = ProductVariantSerializer(read_only=True)
 
     class Meta:
@@ -18,7 +76,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+@extend_schema_serializer(component_name="Order", examples=[ORDER_EXAMPLE])
 class OrderSerializer(serializers.ModelSerializer):
+    """
+    Read-only representation of an order, including items, user, and linked payment.
+    """
     items = OrderItemSerializer(many=True, read_only=True)
     user = UserMinimalSerializer(read_only=True)
     shipping_address = serializers.StringRelatedField()
@@ -39,8 +101,16 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at', 'items', 'user']
 
+
+# ---------- WRITE SERIALIZERS ----------
+
 class OrderItemCreateSerializer(serializers.ModelSerializer):
-    product_variant = serializers.PrimaryKeyRelatedField(queryset=ProductVariant.objects.all())
+    """
+    Write serializer for adding an item to an order.
+    """
+    product_variant = serializers.PrimaryKeyRelatedField(
+        queryset=ProductVariant.objects.all()
+    )
 
     class Meta:
         model = OrderItem
@@ -52,9 +122,16 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
         return value
 
 
+@extend_schema_serializer(component_name="OrderCreate", examples=[ORDER_CREATE_EXAMPLE])
 class OrderCreateSerializer(serializers.ModelSerializer):
+    """
+    Write serializer for creating an order with one or more items.
+    """
     items = OrderItemCreateSerializer(many=True)
-    shipping_address = serializers.PrimaryKeyRelatedField(queryset=Order._meta.get_field('shipping_address').related_model.objects.all())
+    shipping_address = serializers.PrimaryKeyRelatedField(
+        queryset=Order._meta.get_field(
+            'shipping_address').related_model.objects.all()
+    )
 
     class Meta:
         model = Order
@@ -62,10 +139,16 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if not attrs.get('items'):
-            raise serializers.ValidationError("Order must contain at least one item.")
+            raise serializers.ValidationError(
+                "Order must contain at least one item.")
         return attrs
 
     def create(self, validated_data):
+        """
+        Create the order atomically:
+        - Validates stock before decrementing.
+        - Saves each order item with snapshot price.
+        """
         items_data = validated_data.pop('items')
         user = self.context['request'].user
 
@@ -95,7 +178,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
         return order
 
+
+# ---------- CART SERIALIZERS ----------
+
 class CartItemSerializer(serializers.ModelSerializer):
+    """
+    Read-only representation of an item in a cart.
+    """
     product_variant = ProductVariantSerializer(read_only=True)
 
     class Meta:
@@ -105,6 +194,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    """
+    Read-only representation of a user's shopping cart.
+    """
     items = CartItemSerializer(many=True, read_only=True)
     user = UserMinimalSerializer(read_only=True)
 

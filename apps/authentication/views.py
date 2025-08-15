@@ -1,10 +1,13 @@
+# apps/authentication/views.py
+from __future__ import annotations
+
 from typing import Any, Dict, List
 
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics, status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
 
 from drf_spectacular.utils import (
     extend_schema,
@@ -24,54 +27,73 @@ from .serializers import (
     UserRegistrationSerializer,
 )
 from .permissions import IsAdminRole, IsSelfOrAdmin, RolePermission
-from apps.core.pagination import (
-    SmallResultsSetPagination,
-    MediumResultsSetPagination,
-)
+from apps.core.pagination import SmallResultsSetPagination, MediumResultsSetPagination
 
 
-# ---------- RoleViewSet ----------
+# ====================== OpenAPI-only response serializers ======================
+
+from rest_framework import serializers
+
+
+class TokenPairResponseSerializer(serializers.Serializer):
+    """Response body for JWT obtain."""
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+    user_id = serializers.IntegerField()
+    email = serializers.EmailField()
+    username = serializers.CharField(allow_blank=True)
+    roles = serializers.ListField(child=serializers.CharField())
+
+
+class RegistrationResponseUserSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    email = serializers.EmailField()
+    username = serializers.CharField(allow_blank=True)
+
+
+class RegistrationResponseSerializer(serializers.Serializer):
+    """Response body for registration endpoint (user + tokens)."""
+    user = RegistrationResponseUserSerializer()
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+
+# ================================= Roles ======================================
 
 @extend_schema_view(
     list=extend_schema(
         summary="List roles",
         description="Returns all available roles.",
         tags=["Auth: Roles"],
-        responses={200: RoleSerializer(many=True)},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=RoleSerializer(many=True))},
     ),
     retrieve=extend_schema(
         summary="Get a role",
         tags=["Auth: Roles"],
-        responses={200: RoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=RoleSerializer)},
     ),
     create=extend_schema(
         summary="Create role",
         tags=["Auth: Roles"],
         request=RoleSerializer,
-        responses={201: RoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={201: OpenApiResponse(response=RoleSerializer)},
     ),
     update=extend_schema(
         summary="Replace role",
         tags=["Auth: Roles"],
         request=RoleSerializer,
-        responses={200: RoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=RoleSerializer)},
     ),
     partial_update=extend_schema(
         summary="Update role (partial)",
         tags=["Auth: Roles"],
         request=RoleSerializer,
-        responses={200: RoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=RoleSerializer)},
     ),
     destroy=extend_schema(
         summary="Delete role",
         tags=["Auth: Roles"],
         responses={204: OpenApiResponse(description="Role deleted")},
-        security=[{"bearerAuth": []}],
     ),
 )
 class RoleViewSet(viewsets.ModelViewSet):
@@ -80,24 +102,18 @@ class RoleViewSet(viewsets.ModelViewSet):
 
     Permissions:
         - Authenticated + Admin role required for all actions.
-
-    Returns:
-        Standard CRUD for Role model.
     """
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated, RolePermission([Roles.ADMIN])]
 
 
-# ---------- UserViewSet ----------
+# ================================= Users ======================================
 
 @extend_schema_view(
     list=extend_schema(
         summary="List users",
-        description=(
-            "Paginated list of users. Admin-only.\n\n"
-            "Pagination: `page` (1-based), `page_size` (<= 50)."
-        ),
+        description="Paginated list of users. Admin-only.",
         tags=["Auth: Users"],
         parameters=[
             OpenApiParameter(name="page", location=OpenApiParameter.QUERY, required=False, type=int,
@@ -105,46 +121,40 @@ class RoleViewSet(viewsets.ModelViewSet):
             OpenApiParameter(name="page_size", location=OpenApiParameter.QUERY, required=False, type=int,
                              description="Items per page (max 50)."),
         ],
-        responses={200: UserSerializer(many=True)},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserSerializer(many=True))},
     ),
     retrieve=extend_schema(
         summary="Get a user",
         description="Retrieve a user. Allowed for self or admin.",
         tags=["Auth: Users"],
-        responses={200: UserSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserSerializer)},
     ),
     create=extend_schema(
         summary="Create user",
         description="Admin-only user creation.",
         tags=["Auth: Users"],
         request=UserSerializer,
-        responses={201: UserSerializer},
-        security=[{"bearerAuth": []}],
+        responses={201: OpenApiResponse(response=UserSerializer)},
     ),
     update=extend_schema(
         summary="Replace user",
         description="Update all fields. Allowed for self or admin.",
         tags=["Auth: Users"],
         request=UserSerializer,
-        responses={200: UserSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserSerializer)},
     ),
     partial_update=extend_schema(
         summary="Update user (partial)",
         description="Partial update. Allowed for self or admin.",
         tags=["Auth: Users"],
         request=UserSerializer,
-        responses={200: UserSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserSerializer)},
     ),
     destroy=extend_schema(
         summary="Delete user",
         description="Admin-only.",
         tags=["Auth: Users"],
         responses={204: OpenApiResponse(description="User deleted")},
-        security=[{"bearerAuth": []}],
     ),
 )
 class UserViewSet(viewsets.ModelViewSet):
@@ -157,9 +167,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     Pagination:
         MediumResultsSetPagination (page/page_size up to 50).
-
-    Optimization:
-        Prefetch roles and limit selected fields for performance.
     """
     serializer_class = UserSerializer
     pagination_class = MediumResultsSetPagination
@@ -179,59 +186,52 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
 
-# ---------- UserRoleViewSet ----------
+# ============================== User Roles ====================================
 
 @extend_schema_view(
     list=extend_schema(
         summary="List user-role assignments",
         tags=["Auth: UserRoles"],
-        responses={200: UserRoleSerializer(many=True)},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(
+            response=UserRoleSerializer(many=True))},
     ),
     retrieve=extend_schema(
         summary="Get a user-role assignment",
         tags=["Auth: UserRoles"],
-        responses={200: UserRoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserRoleSerializer)},
     ),
     create=extend_schema(
         summary="Assign role to user",
         tags=["Auth: UserRoles"],
         request=UserRoleSerializer,
-        responses={201: UserRoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={201: OpenApiResponse(response=UserRoleSerializer)},
     ),
     update=extend_schema(
         summary="Replace user-role assignment",
         tags=["Auth: UserRoles"],
         request=UserRoleSerializer,
-        responses={200: UserRoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserRoleSerializer)},
     ),
     partial_update=extend_schema(
         summary="Update user-role assignment (partial)",
         tags=["Auth: UserRoles"],
         request=UserRoleSerializer,
-        responses={200: UserRoleSerializer},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserRoleSerializer)},
     ),
     destroy=extend_schema(
         summary="Delete user-role assignment",
         tags=["Auth: UserRoles"],
         responses={204: OpenApiResponse(description="Assignment deleted")},
-        security=[{"bearerAuth": []}],
     ),
 )
 class UserRoleViewSet(viewsets.ModelViewSet):
-    """
-    Manage assignments between users and roles (admin-only).
-    """
+    """Manage assignments between users and roles (admin-only)."""
     queryset = UserRole.objects.select_related("user", "role")
     serializer_class = UserRoleSerializer
     permission_classes = [IsAuthenticated, RolePermission([Roles.ADMIN])]
 
 
-# ---------- JWT: login ----------
+# =============================== JWT Login ====================================
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
@@ -249,10 +249,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     @extend_schema(
         summary="Login (JWT obtain)",
         tags=["Auth: JWT"],
-        request={"$ref": "#/components/schemas/TokenObtainRequest"},
-        responses={200: {"$ref": "#/components/schemas/TokenObtainResponse"}},
-        # This endpoint itself is public; tokens protect subsequent calls.
-        security=[],
+        request=CustomTokenObtainPairSerializer,
+        responses={200: OpenApiResponse(response=TokenPairResponseSerializer)},
+        auth=[],  # public
         examples=[
             OpenApiExample(
                 "Login example",
@@ -265,7 +264,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return super().post(request, *args, **kwargs)
 
 
-# ---------- Registration (public) ----------
+# ============================ Registration (public) ===========================
 
 class UserRegistrationView(generics.CreateAPIView):
     """
@@ -281,9 +280,10 @@ class UserRegistrationView(generics.CreateAPIView):
     @extend_schema(
         summary="Register",
         tags=["Auth: Registration"],
-        request={"$ref": "#/components/schemas/UserRegistrationRequest"},
-        responses={201: {"$ref": "#/components/schemas/TokenObtainResponse"}},
-        security=[],
+        request=UserRegistrationSerializer,
+        responses={201: OpenApiResponse(
+            response=RegistrationResponseSerializer)},
+        auth=[],  # public
         examples=[
             OpenApiExample(
                 "Register example",
@@ -320,14 +320,14 @@ class UserRegistrationView(generics.CreateAPIView):
         )
 
 
-# ---------- Vendor list (admin-only) ----------
+# =========================== Vendor list (admin-only) =========================
 
 class VendorListView(generics.ListAPIView):
     """
     List all users who are vendors. Admin-only.
 
     Pagination:
-        Uses SmallResultsSetPagination by default unless overridden.
+        Uses SmallResultsSetPagination (max 10 per page).
     """
     queryset = User.objects.vendors().only("id", "email", "username")
     serializer_class = UserSerializer
@@ -344,8 +344,7 @@ class VendorListView(generics.ListAPIView):
             OpenApiParameter(name="page_size", location=OpenApiParameter.QUERY, required=False, type=int,
                              description="Items per page (max 10)."),
         ],
-        responses={200: UserSerializer(many=True)},
-        security=[{"bearerAuth": []}],
+        responses={200: OpenApiResponse(response=UserSerializer(many=True))},
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

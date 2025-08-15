@@ -3,10 +3,9 @@ from rest_framework.routers import DefaultRouter
 from .views import AddressViewSet, AuditLogViewSet
 
 router = DefaultRouter()
-router.register('addresses', AddressViewSet, basename='address')
-router.register('audit-logs', AuditLogViewSet, basename='audit-log')
+router.register(r'addresses', AddressViewSet, basename='address')
+router.register(r'audit-logs', AuditLogViewSet, basename='audit-log')
 
 urlpatterns = [
     path('', include(router.urls)),
 ]
-
