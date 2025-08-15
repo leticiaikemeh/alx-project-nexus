@@ -163,6 +163,9 @@ SPECTACULAR_SETTINGS = {
     "LICENSE": {"name": "BSD-3-Clause"},
     "SCHEMA_PATH_PREFIX": r"/api/v1",
     "SERVE_PERMISSIONS": [],
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
     "SECURITY_SCHEMES": {
         "BearerAuth": {
             "type": "http",
