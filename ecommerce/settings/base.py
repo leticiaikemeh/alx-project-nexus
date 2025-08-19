@@ -144,9 +144,28 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Nexus-Commerce API",
-    "DESCRIPTION": "E-commerce backend APIs for products, carts, orders, etc.",
+    "DESCRIPTION": """
+### Overview
+Nexus-Commerce is a production-grade backend for catalog, orders, payments, and notifications.
+This documentation provides a complete OpenAPI specification for all public endpoints under **`/api/v1`**.
+
+**Key capabilities**
+- Auth: JWT-based access with short-lived access tokens and refresh flow.
+- Commerce: products, carts, orders, and order items with filtering & pagination.
+- Payments: payment requests, refunds, and status webhooks.
+- Platform: address book, audit logs, and notifications.
+
+**Authentication**
+Provide a bearer token via the **Authorize** button:
+**Conventions**
+- All timestamps are UTC and ISO-8601.
+- Paginated list endpoints return `count`, `next`, `previous`, and `results`.
+- Errors follow RFC 7807 semantics where applicable.
+
+> Maintained by **Leticia Ikemeh** (API/Backend Engineer). For support or integration questions, use the contact below.
+""",
     "VERSION": "1.0.0",
-    "CONTACT": {"email": "support@nexus-commerce.store"},
+    "CONTACT": {"email": "leticiaikemeh@gmail.com"},
     "LICENSE": {"name": "BSD-3-Clause"},
     "SERVE_INCLUDE_SCHEMA": True,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
